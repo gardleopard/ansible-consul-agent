@@ -1,0 +1,6 @@
+{
+  "datacenter": "{{ consul.datacenter}}",
+  "data_dir": "{{ consul.data_dir }}",
+  "log_level": "INFO",
+  "start_join": {{ consul.masters | to_json }}
+}

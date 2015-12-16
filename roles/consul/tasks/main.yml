@@ -1,0 +1,53 @@
+---
+- name: install tools
+  sudo: yes
+  apt: name={{ item }} state=present update_cache=yes
+  with_items:
+    - unzip
+    - curl
+    - wget
+    - vim
+
+- user: name=consul shell=/bin/bash
+  sudo: yes
+
+- name: create consul  directories
+  sudo: yes
+  file: path={{ item }} state=directory owner=consul
+  with_items:
+    - /opt
+    - /opt/consul
+    - /opt/consul-data
+    - /etc/consul.d
+
+- name: Check if consul is installed
+  shell: find /opt | grep consul/consul
+  register: consul_installed
+  failed_when: consul_installed.rc > 1
+  changed_when: consul_installed.rc == 1
+
+- name: download consul.zip
+  sudo: yes
+  sudo_user: consul
+  get_url: url=https://releases.hashicorp.com/consul/0.6.0/consul_0.6.0_linux_amd64.zip dest=/tmp/consul.zip
+  when: consul_installed.rc == 1
+
+
+- name: Install consul
+  unarchive: src=/tmp/consul.zip dest=/opt/consul copy=no owner=consul
+  sudo: yes
+  sudo_user: consul
+  when: consul_installed.rc == 1
+
+- file: src=/opt/consul/consul dest=/usr/bin/consul owner=root group=root state=link
+  sudo: yes
+
+- name: generate consul configuration files
+  sudo: yes
+  template: src={{ item.src }} dest={{ item.dest }} owner={{ item.owner }}
+  with_items:
+    - { src: 'consul.upstart.j2', dest: '/etc/init/consul.conf', owner: 'root' }
+    - { src: 'consul-conf.json.j2', dest: '/etc/consul.d/basic_config.json', owner: 'consul' }
+  notify:
+    - restart consul
+    - join cluster

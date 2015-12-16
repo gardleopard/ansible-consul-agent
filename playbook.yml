@@ -1,0 +1,12 @@
+---
+- hosts: all
+  roles:
+    - role: consul
+  vars:
+    consul:
+      data_dir: /opt/consul-data
+      datacenter: dc1
+      masters:
+        - 172.19.200.143
+        - 172.19.200.144
+        - 172.19.200.142

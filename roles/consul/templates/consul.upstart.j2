@@ -1,0 +1,11 @@
+description "Consul by HashiCorp"
+
+start on runlevel [2345]
+stop on runlevel [!2345]
+
+respawn
+setuid consul
+
+script
+    exec consul agent -node={{ ansible_hostname }} -bind={{ ansible_default_ipv4.address }} -config-dir /etc/consul.d
+end script
