@@ -3,7 +3,3 @@
 - name: restart consul
   sudo: yes
   service: name=consul state=restarted
-
-- name: join cluster
-  sudo: yes
-  command: consul join {{  consul.masters }}
